@@ -1,4 +1,4 @@
-export * from "./memory";
+export { Memory } from "./memory/index";
 export * from "./memory/memory.types";
 export * from "./types";
 export * from "./embeddings/base";

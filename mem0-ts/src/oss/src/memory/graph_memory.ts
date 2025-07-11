@@ -420,10 +420,10 @@ export class MemoryGraph {
 
         const cypher = `
           MATCH (n {name: $source_name, user_id: $user_id})
-          -[r:${relationship}]->
+          -[r:\`${relationship}\`]->
           (m {name: $dest_name, user_id: $user_id})
           DELETE r
-          RETURN 
+          RETURN
               n.name AS source,
               m.name AS target,
               type(r) AS relationship
@@ -480,12 +480,12 @@ export class MemoryGraph {
           cypher = `
             MATCH (source)
             WHERE elementId(source) = $source_id
-            MERGE (destination:${destinationType} {name: $destination_name, user_id: $user_id})
+            MERGE (destination:\`${destinationType}\` {name: $destination_name, user_id: $user_id})
             ON CREATE SET
                 destination.created = timestamp(),
                 destination.embedding = $destination_embedding
-            MERGE (source)-[r:${relationship}]->(destination)
-            ON CREATE SET 
+            MERGE (source)-[r:\`${relationship}\`]->(destination)
+            ON CREATE SET
                 r.created = timestamp()
             RETURN source.name AS source, type(r) AS relationship, destination.name AS target
           `;
@@ -503,12 +503,12 @@ export class MemoryGraph {
           cypher = `
             MATCH (destination)
             WHERE elementId(destination) = $destination_id
-            MERGE (source:${sourceType} {name: $source_name, user_id: $user_id})
+            MERGE (source:\`${sourceType}\` {name: $source_name, user_id: $user_id})
             ON CREATE SET
                 source.created = timestamp(),
                 source.embedding = $source_embedding
-            MERGE (source)-[r:${relationship}]->(destination)
-            ON CREATE SET 
+            MERGE (source)-[r:\`${relationship}\`]->(destination)
+            ON CREATE SET
                 r.created = timestamp()
             RETURN source.name AS source, type(r) AS relationship, destination.name AS target
           `;
@@ -528,8 +528,8 @@ export class MemoryGraph {
             WHERE elementId(source) = $source_id
             MATCH (destination)
             WHERE elementId(destination) = $destination_id
-            MERGE (source)-[r:${relationship}]->(destination)
-            ON CREATE SET 
+            MERGE (source)-[r:\`${relationship}\`]->(destination)
+            ON CREATE SET
                 r.created_at = timestamp(),
                 r.updated_at = timestamp()
             RETURN source.name AS source, type(r) AS relationship, destination.name AS target
@@ -542,13 +542,13 @@ export class MemoryGraph {
           };
         } else {
           cypher = `
-            MERGE (n:${sourceType} {name: $source_name, user_id: $user_id})
+            MERGE (n:\`${sourceType}\` {name: $source_name, user_id: $user_id})
             ON CREATE SET n.created = timestamp(), n.embedding = $source_embedding
             ON MATCH SET n.embedding = $source_embedding
-            MERGE (m:${destinationType} {name: $dest_name, user_id: $user_id})
+            MERGE (m:\`${destinationType}\` {name: $dest_name, user_id: $user_id})
             ON CREATE SET m.created = timestamp(), m.embedding = $dest_embedding
             ON MATCH SET m.embedding = $dest_embedding
-            MERGE (n)-[rel:${relationship}]->(m)
+            MERGE (n)-[rel:\`${relationship}\`]->(m)
             ON CREATE SET rel.created = timestamp()
             RETURN n.name AS source, type(rel) AS relationship, m.name AS target
           `;
@@ -590,7 +590,7 @@ export class MemoryGraph {
     try {
       const cypher = `
         MATCH (source_candidate)
-        WHERE source_candidate.embedding IS NOT NULL 
+        WHERE source_candidate.embedding IS NOT NULL
         AND source_candidate.user_id = $user_id
 
         WITH source_candidate,
@@ -636,7 +636,7 @@ export class MemoryGraph {
     try {
       const cypher = `
         MATCH (destination_candidate)
-        WHERE destination_candidate.embedding IS NOT NULL 
+        WHERE destination_candidate.embedding IS NOT NULL
         AND destination_candidate.user_id = $user_id
 
         WITH destination_candidate,

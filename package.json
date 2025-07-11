@@ -1,0 +1,52 @@
+{
+  "name": "@gen-ai/mem0-fork",
+  "version": "0.1.0",
+  "description": "Local fork of mem0ai with custom patches",
+  "main": "mem0-ts/src/oss/src/index.ts",
+  "types": "mem0-ts/src/oss/src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./mem0-ts/src/oss/src/index.ts",
+      "require": "./mem0-ts/src/oss/src/index.ts"
+    },
+    "./oss": {
+      "import": "./mem0-ts/src/oss/src/index.ts",
+      "require": "./mem0-ts/src/oss/src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo 'Using TypeScript source directly'",
+    "dev": "echo 'Using TypeScript source directly'",
+    "clean": "echo 'Using TypeScript source directly'",
+    "test": "echo 'Using TypeScript source directly'"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.18.0",
+    "@google/genai": "^0.7.0",
+    "@qdrant/js-client-rest": "^1.13.0",
+    "openai": "^4.28.0",
+    "zod": "^3.22.4",
+    "uuid": "^9.0.1"
+  },
+  "optionalDependencies": {
+    "neo4j-driver": "^5.0.0",
+    "sqlite3": "^5.1.7",
+    "redis": "^4.7.0",
+    "pg": "^8.16.3",
+    "@types/pg": "^8.15.4",
+    "groq-sdk": "^0.3.0",
+    "ollama": "^0.5.0",
+    "@mistralai/mistralai": "^1.0.0",
+    "@langchain/core": "^0.3.42",
+    "@langchain/community": "^0.3.35",
+    "@supabase/supabase-js": "^2.0.0",
+    "cloudflare": "^4.2.0",
+    "@cloudflare/workers-types": "^4.20250504.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.3.3"
+  },
+  "private": true
+}

@@ -110,6 +110,6 @@ export class ConfigManager {
     };
 
     // Validate the merged config
-    return MemoryConfigSchema.parse(mergedConfig);
+    return MemoryConfigSchema.parse(mergedConfig) as MemoryConfig;
   }
 }
