@@ -11,6 +11,7 @@ export interface AddMemoryOptions extends Entity {
   metadata?: Record<string, any>;
   filters?: SearchFilters;
   infer?: boolean;
+  customPrompt?: string;
 }
 
 export interface SearchMemoryOptions extends Entity {

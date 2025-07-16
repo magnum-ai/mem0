@@ -15,6 +15,7 @@ import {
   HistoryManagerFactory,
 } from "../utils/factory";
 import {
+  cutToJson,
   getFactRetrievalMessages,
   getUpdateMemoryMessages,
   parseMessages,
@@ -35,6 +36,7 @@ import {
 import { parse_vision_messages } from "../utils/memory";
 import { HistoryManager } from "../storage/base";
 import { captureClientEvent } from "../utils/telemetry";
+import { retryLLM } from "../utils/api-utils";
 
 export class Memory {
   private config: MemoryConfig;
@@ -169,6 +171,7 @@ export class Memory {
       metadata = {},
       filters = {},
       infer = true,
+      customPrompt = "",
     } = config;
 
     if (userId) filters.userId = metadata.userId = userId;
@@ -193,6 +196,7 @@ export class Memory {
       metadata,
       filters,
       infer,
+      customPrompt,
     );
 
     // Add to graph store if available
@@ -219,6 +223,7 @@ export class Memory {
     metadata: Record<string, any>,
     filters: SearchFilters,
     infer: boolean,
+    customPrompt: string = "",
   ): Promise<MemoryItem[]> {
     if (!infer) {
       const returnedMemories: MemoryItem[] = [];
@@ -241,22 +246,27 @@ export class Memory {
     }
     const parsedMessages = messages.map((m) => m.content).join("\n");
 
-    const [systemPrompt, userPrompt] = this.customPrompt
-      ? [this.customPrompt, `Input:\n${parsedMessages}`]
+    const promptOverride = customPrompt || this.customPrompt;
+    const [systemPrompt, userPrompt] = promptOverride
+      ? [promptOverride, `Input:\n${parsedMessages}`]
       : getFactRetrievalMessages(parsedMessages);
 
-    const response = await this.llm.generateResponse(
-      [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      { type: "json_object" },
-    );
-
-    const cleanResponse = removeCodeBlocks(response as string);
     let facts: string[] = [];
+    let cleanResponse: string = "";
     try {
-      facts = JSON.parse(cleanResponse).facts || [];
+      facts = await retryLLM(async () => {
+        const response = await this.llm.generateResponse(
+          [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          { type: "json_object" },
+        );
+
+        cleanResponse = cutToJson(response as string);
+
+        return JSON.parse(cleanResponse).facts || [];
+      });
     } catch (e) {
       console.error(
         "Failed to parse facts from LLM response:",
@@ -301,15 +311,19 @@ export class Memory {
     // Get memory update decisions
     const updatePrompt = getUpdateMemoryMessages(uniqueOldMemories, facts);
 
-    const updateResponse = await this.llm.generateResponse(
-      [{ role: "user", content: updatePrompt }],
-      { type: "json_object" },
-    );
-
-    const cleanUpdateResponse = removeCodeBlocks(updateResponse as string);
     let memoryActions: any[] = [];
+    let cleanUpdateResponse: string = "";
     try {
-      memoryActions = JSON.parse(cleanUpdateResponse).memory || [];
+      memoryActions = await retryLLM(async () => {
+        const updateResponse = await this.llm.generateResponse(
+          [{ role: "user", content: updatePrompt }],
+          { type: "json_object" },
+        );
+
+        cleanUpdateResponse = cutToJson(updateResponse as string);
+
+        return JSON.parse(cleanUpdateResponse).memory || [];
+      });
     } catch (e) {
       console.error(
         "Failed to parse memory actions from LLM response:",

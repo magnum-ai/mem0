@@ -7,9 +7,9 @@ import type {
 let version = "2.1.34";
 
 // Safely check for process.env in different environments
-let MEM0_TELEMETRY = true;
+let MEM0_TELEMETRY = false;
 try {
-  MEM0_TELEMETRY = process?.env?.MEM0_TELEMETRY === "false" ? false : true;
+  MEM0_TELEMETRY = process?.env?.MEM0_TELEMETRY === "true" ? true : false;
 } catch (error) {}
 const POSTHOG_API_KEY = "phc_hgJkUVJFYtmaJqrvf6CYN67TIQ8yhXAkWzUn9AMU4yX";
 const POSTHOG_HOST = "https://us.i.posthog.com/i/v0/e/";
@@ -73,6 +73,8 @@ async function captureClientEvent(
   instance: TelemetryInstance,
   additionalData: Record<string, any> = {},
 ) {
+  if (!MEM0_TELEMETRY) return;
+
   if (!instance.telemetryId) {
     console.warn("No telemetry ID found for instance");
     return;

@@ -44,6 +44,8 @@ export interface LLMConfig {
   apiKey?: string;
   model?: string | any;
   modelProperties?: Record<string, any>;
+  rateLimit?: number; // number of milliseconds delay between api calls
+  rateLimitKey?: string;
 }
 
 export interface Neo4jConfig {
